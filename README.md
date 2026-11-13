@@ -14,12 +14,28 @@ Importing the plugin gives an experiment:
   tag, branch, or commit; empty means the latest release. The exact commits are
   recorded in provenance metadata.
 - **`knit_with_spack_env <spack.yaml>`** / **`@with_spack_env`** — declare that a
-  setup builds a Spack environment from a `spack.yaml` manifest (a path, or fed
-  on stdin).
+  setup builds a Spack environment from a complete `spack.yaml` manifest (a path,
+  or fed on stdin).
 - **`knit_with_spack_specs <spec>...`** / **`@with_spack_specs`** — the same, but
   from a bare spec list; the plugin writes the minimal `spack.yaml` for you.
+  Several calls on one setup **add up** into one spec list.
+- **`knit_with_spack_specs_from <fn>`** / **`@with_spack_specs_from`** — a function
+  prints newline-separated specs on stdout when the setup runs, so the spec list
+  can be chosen *structurally* (one spec per computed item, a spec added only
+  under a flag). The function is called with the setup's arguments as `"$@"` and
+  reads parameters with `knit_get_parameter`.
+- **`knit_with_spack_env_from <fn>`** / **`@with_spack_env_from`** — the
+  programmatic twin of `knit_with_spack_env`: a function prints a whole
+  `spack.yaml` on stdout.
 - **`knit spack <args>...`** — run the knit-provisioned Spack, forwarding every
   argument verbatim.
+
+A setup declares **either** a spec list (any number of `..._specs` /
+`..._specs_from` calls) **or** one complete manifest (a single `..._env` /
+`..._env_from`); the two are mutually exclusive on one setup. Anywhere in a spec
+or manifest, a **`{{parameter-name}}`** placeholder is replaced, when the setup
+runs, with the value of that setup parameter — so one definition builds whatever
+version the invocation asks for (for example `openblas@{{openblas-version}}`).
 
 Provisioning, update-mode re-provisioning, the freeze-on-built rule, the
 `.activate.sh` re-entry lines for dependent jobs, and the manifest/lock
